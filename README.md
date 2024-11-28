@@ -5,29 +5,29 @@ Uma API para gerenciar autores e livros, utilizando autenticação e segurança 
 ## 🛠️ Tecnologias Utilizadas
 
 - **Java 17**
-- 
+  
 - **Spring Boot**
-- 
+  
 - **Spring Security**
-- 
+  
 - **JWT (JSON Web Token)**
-- 
+  
 - **OAuth2**
-- 
+  
 - **PostgreSQL**
 
 ## 🔑 Funcionalidades
 
 - **Cadastro de Autores**: Permite criar, listar, atualizar e excluir autores.
-- 
+  
 - **Cadastro de Livros**: Permite criar, listar, atualizar e excluir livros.
-- 
+  
 - **Autenticação e Autorização**:
-- 
+  
   - **Basic Auth** para autenticação simples.
-  - 
+    
   - **JWT** para autenticação baseada em tokens.
-  - 
+    
   - **OAuth2** para autenticação com provedores externos, como Google.
 
 ## 🚀 Como Executar
