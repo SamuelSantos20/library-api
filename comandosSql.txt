@@ -1,0 +1,92 @@
+drop table livro;
+
+drop table autor;
+
+create table autor(
+id uuid not null primary key,
+nome varchar(200) not null,
+data_nascimento date not null,
+nacionalidade varchar(100) not null,
+data_cadastro timestamp,
+data_atualizacao timestamp,
+id_usuario uuid
+);
+
+create table livro(
+
+id uuid not null primary key,
+isbn varchar(20) not null unique,
+titulo varchar(100) not null,
+genero varchar(80) not null,
+data_publicacao date,
+preco numeric(18,2),
+data_cadastro timestamp,
+data_atualizacao timestamp,
+id_usuario uuid,
+id_autor uuid not null references autor(id),
+constraint chk_genero check(genero in ( 'FICCAO','FANTASIA','MISTERIO','ROMANCE','CIENCIA') )
+
+);
+
+
+*** O timestamp do sql guarda a data e hora diferentemente do date simples que só guarda a data
+
+LocalDateTime  = timestamp
+
+LocalDate = date
+
+Date  = date
+
+
+*** O select to_char(data_publicacao , 'DD/MM/YYYY') from livro; é um tipo de função no qual ser para realizar a pesquisa de data através da transformação para um varchar
+asim podendo realizar a pesquisa de campos expecificos da data como : ano ,mes , dia ou dia e ano , ano e mes , mes e dia...
+
+basta passar o nome do campo da tabela que possui a data (nesse caso  era data_publicacao)
+
+
+select to_char(data_publicacao , 'YYYY') from livro; somente o ano
+
+select to_char(data_publicacao , 'DD/MM') from livro; dia e mes
+
+select to_char(data_publicacao , 'MM/YYYY') from livro; mes e ano
+
+select to_char(data_publicacao , 'MM') from livro; somente o mes
+
+select to_char(data_publicacao , 'DD') from livro; somente o dia
+
+
+create table usuario(
+id uuid not null primary key,
+username varchar(50) not null unique,
+password varchar(50) not null,
+roles[]
+
+
+);
+
+
+
+
+create table usuario(
+id uuid not null primary key,
+username varchar(200) not null unique,
+password varchar(200) not null,
+email varchar(200) not null,
+roles varchar[]
+
+
+);
+
+drop table usuario;
+
+alter table usuario  add column email varchar(200) not null;
+
+
+
+create table client(
+id uuid not null primary key,
+client_id varchar(200) not null,
+client_secret varchar(600) not null,
+redirect_uri varchar(300) not null,
+scope varchar(100)
+);
