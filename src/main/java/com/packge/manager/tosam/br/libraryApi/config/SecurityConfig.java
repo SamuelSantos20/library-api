@@ -5,7 +5,9 @@ import com.packge.manager.tosam.br.libraryApi.security.LoginSocialSuccesHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -16,6 +18,13 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -27,6 +36,7 @@ public class SecurityConfig {
 
 
         return httpSecurity.csrf(AbstractHttpConfigurer::disable)
+                .cors(Customizer.withDefaults())
 
 
                 .formLogin(form -> form.loginPage("/login").permitAll())
@@ -38,6 +48,7 @@ public class SecurityConfig {
                         requestMatchers(HttpMethod.POST, "/usuarios/**").permitAll()
                         .requestMatchers("/autores/**").permitAll()
                         .requestMatchers("/livros/**").permitAll()
+                        .requestMatchers("/auth/**").permitAll()
 
 
                         .anyRequest().authenticated())
@@ -50,10 +61,9 @@ public class SecurityConfig {
 
 
                 })
-                .oauth2ResourceServer(oauthRs -> oauthRs.jwt(Customizer.withDefaults()))
+                //.oauth2ResourceServer(oauthRs -> oauthRs.jwt(Customizer.withDefaults()))
 
-                .addFilterAfter(jwtCustomAuthenticationFilter , BearerTokenAuthenticationFilter.class)
-
+                .addFilterBefore(jwtCustomAuthenticationFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
                 .build();
 
     }
@@ -95,6 +105,35 @@ var convert = new JwtAuthenticationConverter();
 
 
 
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        // Suas configurações de origens (IntelliJ, VSCode, etc)
+        configuration.setAllowedOrigins(List.of("http://localhost:63342", "http://127.0.0.1:63342", "http://localhost:5500"));
+
+        // Métodos permitidos
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+
+        // Headers que o FRONT envia para o BACK
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+
+        // 👇 ADICIONE ESTA LINHA OBRIGATORIAMENTE 👇
+        // Headers que o BACK deixa o FRONT ler na resposta
+        configuration.setExposedHeaders(List.of("Authorization"));
+
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
     }
 
 }

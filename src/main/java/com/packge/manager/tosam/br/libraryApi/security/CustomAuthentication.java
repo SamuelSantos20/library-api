@@ -1,26 +1,29 @@
 package com.packge.manager.tosam.br.libraryApi.security;
 
 import com.packge.manager.tosam.br.libraryApi.model.Usuario;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.stream.Collectors;
 
-@RequiredArgsConstructor
-@Getter
 public class CustomAuthentication implements Authentication {
 
-
     private final Usuario usuario;
+    private boolean authenticated; // Controle interno
+
+    public CustomAuthentication(Usuario usuario) {
+        this.usuario = usuario;
+        // 👇 O SEGREDO: Dizemos que se chegou aqui, o login é VÁLIDO!
+        this.authenticated = true;
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return usuario.getRoles().stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList());
+        return usuario.getRoles().stream()
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -30,22 +33,26 @@ public class CustomAuthentication implements Authentication {
 
     @Override
     public Object getDetails() {
-        return null;
+        return usuario;
     }
 
     @Override
     public Object getPrincipal() {
-        return this.usuario;
+        return usuario;
+    }
+
+    public Usuario getUsuario() {
+        return usuario;
     }
 
     @Override
     public boolean isAuthenticated() {
-        return true;
+        return this.authenticated;
     }
 
     @Override
     public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
-        throw new IllegalArgumentException("Não é necessario chamar este metodo! ");
+        this.authenticated = isAuthenticated;
     }
 
     @Override

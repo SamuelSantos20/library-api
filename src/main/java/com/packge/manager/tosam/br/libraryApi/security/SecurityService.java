@@ -19,7 +19,7 @@ public class SecurityService {
 
         if (authentication instanceof CustomAuthentication customAuthentication) {
 
-            return customAuthentication.getUsuario();
+            return (Usuario) customAuthentication.getPrincipal();
         }
         return null;
 

@@ -1,92 +1,48 @@
-drop table livro;
+-- Habilita extensão para UUID se necessário (opcional, mas recomendado)
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-drop table autor;
-
-create table autor(
-id uuid not null primary key,
-nome varchar(200) not null,
-data_nascimento date not null,
-nacionalidade varchar(100) not null,
-data_cadastro timestamp,
-data_atualizacao timestamp,
-id_usuario uuid
+-- 1. Tabela USUARIO
+CREATE TABLE usuario (
+    id UUID NOT NULL PRIMARY KEY,
+    username VARCHAR(200) UNIQUE,
+    password VARCHAR(200),
+    email VARCHAR(200),
+    roles VARCHAR[] -- Array de strings para o PostgreSQL
 );
 
-create table livro(
-
-id uuid not null primary key,
-isbn varchar(20) not null unique,
-titulo varchar(100) not null,
-genero varchar(80) not null,
-data_publicacao date,
-preco numeric(18,2),
-data_cadastro timestamp,
-data_atualizacao timestamp,
-id_usuario uuid,
-id_autor uuid not null references autor(id),
-constraint chk_genero check(genero in ( 'FICCAO','FANTASIA','MISTERIO','ROMANCE','CIENCIA') )
-
+-- 2. Tabela AUTOR
+CREATE TABLE autor (
+    id UUID NOT NULL PRIMARY KEY,
+    nome VARCHAR(200) NOT NULL,
+    data_nascimento DATE NOT NULL,
+    nacionalidade VARCHAR(100) NOT NULL,
+    data_cadastro TIMESTAMP,
+    data_atualizacao TIMESTAMP,
+    id_usuario UUID REFERENCES usuario(id) -- Relacionamento com Usuario
 );
 
+-- 3. Tabela LIVRO
+CREATE TABLE livro (
+    id UUID NOT NULL PRIMARY KEY,
+    isbn VARCHAR(30) NOT NULL UNIQUE,
+    titulo VARCHAR(150) NOT NULL,
+    data_publicacao DATE NOT NULL,
+    genero VARCHAR(30) NOT NULL,
+    preco NUMERIC(18, 2),
+    data_cadastro TIMESTAMP,
+    data_atualizacao TIMESTAMP,
+    id_autor UUID NOT NULL REFERENCES autor(id), -- Foreign Key para Autor
+    id_usuario UUID REFERENCES usuario(id),      -- Foreign Key para Usuario
 
-*** O timestamp do sql guarda a data e hora diferentemente do date simples que só guarda a data
-
-LocalDateTime  = timestamp
-
-LocalDate = date
-
-Date  = date
-
-
-*** O select to_char(data_publicacao , 'DD/MM/YYYY') from livro; é um tipo de função no qual ser para realizar a pesquisa de data através da transformação para um varchar
-asim podendo realizar a pesquisa de campos expecificos da data como : ano ,mes , dia ou dia e ano , ano e mes , mes e dia...
-
-basta passar o nome do campo da tabela que possui a data (nesse caso  era data_publicacao)
-
-
-select to_char(data_publicacao , 'YYYY') from livro; somente o ano
-
-select to_char(data_publicacao , 'DD/MM') from livro; dia e mes
-
-select to_char(data_publicacao , 'MM/YYYY') from livro; mes e ano
-
-select to_char(data_publicacao , 'MM') from livro; somente o mes
-
-select to_char(data_publicacao , 'DD') from livro; somente o dia
-
-
-create table usuario(
-id uuid not null primary key,
-username varchar(50) not null unique,
-password varchar(50) not null,
-roles[]
-
-
+    -- Constraint para garantir que o gênero seja válido (opcional, mas seguro)
+    CONSTRAINT chk_genero CHECK (genero IN ('FICCAO', 'FANTASIA', 'MISTERIO', 'ROMANCE', 'BIOGRAFIA', 'CIENCIA'))
 );
 
-
-
-
-create table usuario(
-id uuid not null primary key,
-username varchar(200) not null unique,
-password varchar(200) not null,
-email varchar(200) not null,
-roles varchar[]
-
-
-);
-
-drop table usuario;
-
-alter table usuario  add column email varchar(200) not null;
-
-
-
-create table client(
-id uuid not null primary key,
-client_id varchar(200) not null,
-client_secret varchar(600) not null,
-redirect_uri varchar(300) not null,
-scope varchar(100)
+-- 4. Tabela CLIENT (para OAuth2)
+CREATE TABLE client (
+    id UUID NOT NULL PRIMARY KEY,
+    client_id VARCHAR(200),
+    client_secret VARCHAR(600),
+    redirect_uri VARCHAR(300),
+    scope VARCHAR(100)
 );
