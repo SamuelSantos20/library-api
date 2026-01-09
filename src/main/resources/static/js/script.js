@@ -1,7 +1,6 @@
 /* --- ARQUIVO: script.js --- */
 
 // URL BASE do seu Backend Spring Boot
-// Certifique-se de habilitar o @CrossOrigin no seu Controller Java se rodar em portas diferentes
 const API_URL = 'http://localhost:8081';
 // --- ESTADO DA APLICAÇÃO ---
 const state = {
@@ -64,38 +63,48 @@ async function apiFetch(endpoint, options = {}) {
         }
 }
 
-// --- AÇÕES DE DADOS (FETCH & POST) ---
-
 async function fetchInitialData() {
     state.loading = true;
-    renderApp(); // Re-renderiza para mostrar loadings se tiver
+    renderApp();
 
+    // 1. Busca Autores
     try {
-        // Busca paralela de Livros e Autores
-        const [booksRes, authorsRes] = await Promise.all([
-            apiFetch('/livros'),
-            apiFetch('/autores')
-        ]);
-
-        if (booksRes.ok && authorsRes.ok) {
-            const books = await booksRes.json();
-            const authors = await authorsRes.json();
-
-            // Atualiza Estado
-            state.data.books = books;
-            state.data.authors = authors;
-            
-            // Atualiza Estatísticas
-            state.data.stats.totalLivros = books.length;
-            state.data.stats.totalAutores = authors.length;
-            // Para usuarios e emprestimos, manteremos fixo até ter endpoint
+        const authorsRes = await apiFetch('/autores');
+        if (authorsRes.ok) {
+            state.data.authors = await authorsRes.json();
+            state.data.stats.totalAutores = state.data.authors.length;
+        } else {
+            console.error("Erro ao buscar autores:", authorsRes.status);
         }
     } catch (e) {
-        console.error("Falha ao carregar dados iniciais", e);
-    } finally {
-        state.loading = false;
-        renderApp();
+        console.error("Falha na requisição de autores:", e);
     }
+
+    // 2. Busca Livros
+    try {
+        const booksRes = await apiFetch('/livros');
+        if (booksRes.ok) {
+            const result = await booksRes.json();
+
+
+            if (result.content && Array.isArray(result.content)) {
+                state.data.books = result.content;
+                state.data.stats.totalLivros = result.totalElements; // Usa o total real do banco
+            } else {
+                state.data.books = result;
+                state.data.stats.totalLivros = result.length;
+            }
+
+        } else {
+            console.error("Erro ao buscar livros:", booksRes.status);
+        }
+    } catch (e) {
+        console.error("Falha na requisição de livros:", e);
+        state.data.books = []; // Garante que seja um array vazio em caso de erro para não quebrar o .map
+    }
+
+    state.loading = false;
+    renderApp();
 }
 
 // --- HANDLERS ---
@@ -119,15 +128,12 @@ async function handleLogin(e) {
         });
 
         if (response.ok) {
-            // 👇 AQUI ESTÁ A CORREÇÃO MÁGICA 👇
-            // Lemos o corpo da resposta como JSON, pois seu Java retorna: {"token": "eyJ..."}
             const body = await response.json();
             let token = body.token;
 
-            console.log("Token recebido do Backend:", token); // Vai aparecer no console
+            console.log("Token recebido do Backend:", token); /
 
             if (token) {
-                // Se vier com prefixo, limpamos (apenas garantia)
                 if (token.startsWith('Bearer ')) {
                     token = token.slice(7);
                 }
@@ -160,11 +166,16 @@ function handleLogout() {
     renderApp();
 }
 
-function navigate(view) {
+async function navigate(view) {
     state.currentView = view;
     state.isMobileMenuOpen = false;
     state.forms.showBookForm = false;
     state.forms.showAuthorForm = false;
+
+    if (view === 'books' || view === 'authors') {
+       await fetchInitialData();
+    }
+
     renderApp();
 }
 
@@ -183,13 +194,12 @@ async function handleAddBook(e) {
     e.preventDefault();
     const formData = new FormData(e.target);
     
-    // Objeto conforme esperado pelo seu DTO Java (CadastroLivroDTO ou Livro)
     const newBook = {
         titulo: formData.get('titulo'),
         isbn: formData.get('isbn'),
         dataPublicacao: formData.get('data'), // Verifique o formato de data esperado pelo Java (YYYY-MM-DD)
         genero: formData.get('genero'),
-        idAutor: formData.get('autorId') // Assumindo que seu endpoint espera o ID para vincular
+        idAutor: formData.get('autorId')
     };
 
     try {
@@ -201,7 +211,7 @@ async function handleAddBook(e) {
         if (response.ok) {
             alert('Livro cadastrado com sucesso!');
             toggleForm('book');
-            fetchInitialData(); // Recarrega lista
+            fetchInitialData();
         } else {
             const err = await response.json();
             alert('Erro ao salvar: ' + (err.message || response.statusText));
@@ -215,7 +225,6 @@ async function handleAddAuthor(e) {
     e.preventDefault();
     const formData = new FormData(e.target);
     
-    // Objeto conforme DTO (AutorDTO)
     const newAuthor = {
         nome: formData.get('nome'),
         nacionalidade: formData.get('nacionalidade'),
@@ -240,8 +249,6 @@ async function handleAddAuthor(e) {
     }
 }
 
-// --- FUNÇÕES DE RENDERIZAÇÃO (VIEW) ---
-// Mantive a estrutura visual idêntica, apenas lendo de state.data
 
 function renderLogin() {
     return `

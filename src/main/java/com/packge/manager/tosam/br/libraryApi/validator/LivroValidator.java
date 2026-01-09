@@ -24,11 +24,11 @@ public class LivroValidator {
         if (existeLivroComIsbn(livro)) {
             throw new RegistroDuplicadoExeption("ISBN já Cadastrado!");
         }
-
-        if (isPrecoObrigatorioNulo(livro)){
-
-            throw  new RegradeNegocioException("Para livros com o ano de publicção de 2020 em diante, o campo preco é obrigatório! " , "preco");
-        }
+//
+//        if (isPrecoObrigatorioNulo(livro)){
+//
+//            throw  new RegradeNegocioException("Para livros com o ano de publicção de 2020 em diante, o campo preco é obrigatório! " , "preco");
+//        }
 
 
 

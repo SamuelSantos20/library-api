@@ -18,20 +18,19 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/auth")
-@RequiredArgsConstructor// Sugestão: separar login de API do login de página
+@RequiredArgsConstructor
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
 
     private  final JwtService jwtService;
-    // No método login do AuthController:
+
     @PostMapping("/login")
     public ResponseEntity<Object> login(@RequestBody LoginDTO dadosLogin) {
         try {
             var authToken = new UsernamePasswordAuthenticationToken(dadosLogin.login(), dadosLogin.senha());
             Authentication auth = authenticationManager.authenticate(authToken);
 
-            // Chama o método que acabamos de corrigir
             String token = jwtService.gerarToken(auth);
 
             return ResponseEntity.ok().body("{\"token\": \"" + token + "\"}");
@@ -40,7 +39,6 @@ public class AuthController {
         }
     }
 
-    // DTO Auxiliar para receber o JSON
     record LoginDTO(String login, String senha) {
     }
 

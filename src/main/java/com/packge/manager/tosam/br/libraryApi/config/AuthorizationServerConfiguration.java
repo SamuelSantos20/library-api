@@ -28,8 +28,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@Configuration
-@EnableMethodSecurity
+//@Configuration
+//@EnableMethodSecurity
 public class AuthorizationServerConfiguration {
 
     @Bean
