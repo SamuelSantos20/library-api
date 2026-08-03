@@ -109,13 +109,13 @@ Com a aplicação em execução, acesse o Swagger UI em:
 http://localhost:8081/swagger-ui.html
 ```
 
-Para executar os testes com o PostgreSQL configurado:
+Para executar a suíte de 18 testes:
 
 ```bash
 ./mvnw test
 ```
 
-No Windows, use `mvnw.cmd test`.
+No Windows, use `mvnw.cmd test`. O perfil `test` usa H2 em memória e credenciais OAuth fictícias, portanto a suíte não depende de PostgreSQL nem de chaves externas.
 
 ## Licença
 

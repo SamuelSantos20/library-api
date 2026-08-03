@@ -6,6 +6,7 @@ import com.packge.manager.tosam.br.libraryApi.model.Livro;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -14,6 +15,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @SpringBootTest
+@ActiveProfiles("test")
 class LivroRepositoryTest {
 
     @Autowired
@@ -67,6 +69,7 @@ class LivroRepositoryTest {
 
         livro.setAutor(autor);
 
+        autorRepository.save(autor);
         livroRepository.save(livro);
 
 
