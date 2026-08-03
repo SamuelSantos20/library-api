@@ -2,6 +2,7 @@ package com.packge.manager.tosam.br.libraryApi.config;
 
 import com.packge.manager.tosam.br.libraryApi.security.JwtCustomAuthenticationFilter;
 import com.packge.manager.tosam.br.libraryApi.security.LoginSocialSuccesHandler;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -22,6 +23,7 @@ import org.springframework.security.oauth2.server.authorization.settings.TokenSe
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -34,45 +36,32 @@ import java.util.List;
 @EnableMethodSecurity(securedEnabled = true, jsr250Enabled = true)
 public class SecurityConfig {
 
-   @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, LoginSocialSuccesHandler succesHandler  , JwtCustomAuthenticationFilter jwtCustomAuthenticationFilter) throws Exception {
+    @Bean
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity httpSecurity,
+            LoginSocialSuccesHandler successHandler,
+            JwtCustomAuthenticationFilter jwtCustomAuthenticationFilter) throws Exception {
 
-
-        return httpSecurity.csrf(AbstractHttpConfigurer::disable)
+        return httpSecurity
+                .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
-
-
                 .formLogin(form -> form.loginPage("/login").permitAll())
-               
-
-
-                .authorizeHttpRequests(custom -> custom
-                        .requestMatchers("/login").permitAll().
-                        requestMatchers(HttpMethod.POST, "/usuarios/**").permitAll()
+                .authorizeHttpRequests(requests -> requests
+                        .requestMatchers("/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/usuarios/**").permitAll()
                         .requestMatchers("/autores/**").permitAll()
                         .requestMatchers("/livros/**").permitAll()
                         .requestMatchers("/auth/**").permitAll()
-
-
                         .anyRequest().authenticated())
-                .oauth2Login(outh2 -> {
-
-                    outh2.loginPage("/login");
-                    outh2.successHandler(succesHandler);
-
-
-
-
-                })
-                //.oauth2ResourceServer(oauthRs -> oauthRs.jwt(Customizer.withDefaults()))
-
-                .addFilterBefore(jwtCustomAuthenticationFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
+                .oauth2Login(oauth2 -> oauth2
+                        .loginPage("/login")
+                        .successHandler(successHandler))
+                .addFilterBefore(jwtCustomAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
-
     }
 
     @Bean
-   public WebSecurityCustomizer webSecurityCustomizer() {
+    public WebSecurityCustomizer webSecurityCustomizer() {
         return web -> web.ignoring().requestMatchers(
                 "/v2/api-docs/**",
                 "/v3/api-docs/**",
@@ -82,51 +71,29 @@ public class SecurityConfig {
         );
     }
 
- 
-
     @Bean
-    GrantedAuthorityDefaults grantedAuthority() {
-
+    GrantedAuthorityDefaults grantedAuthorityDefaults() {
         return new GrantedAuthorityDefaults("");
     }
 
-     
-
     @Bean
-    JwtAuthenticationConverter jwtAuthenticationConverter(){
-        var authoritiesConverterconvert = new JwtGrantedAuthoritiesConverter();
+    JwtAuthenticationConverter jwtAuthenticationConverter() {
+        var authoritiesConverter = new JwtGrantedAuthoritiesConverter();
+        authoritiesConverter.setAuthorityPrefix("");
 
-        authoritiesConverterconvert.setAuthorityPrefix("");
-
-
-var convert = new JwtAuthenticationConverter();
-
-        convert.setJwtGrantedAuthoritiesConverter(authoritiesConverterconvert);
-
-        return convert;
-
-
-
-
+        var authenticationConverter = new JwtAuthenticationConverter();
+        authenticationConverter.setJwtGrantedAuthoritiesConverter(authoritiesConverter);
+        return authenticationConverter;
     }
 
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
+    public CorsConfigurationSource corsConfigurationSource(
+            @Value("${app.cors.allowed-origins}") List<String> allowedOrigins) {
         CorsConfiguration configuration = new CorsConfiguration();
-
-        // Suas configurações de origens (IntelliJ, VSCode, etc)
-        configuration.setAllowedOrigins(List.of("http://localhost:63342", "http://127.0.0.1:63342", "http://localhost:5500"));
-
-        // Métodos permitidos
+        configuration.setAllowedOrigins(allowedOrigins);
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-
-        // Headers que o FRONT envia para o BACK
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
-
-        // 👇 ADICIONE ESTA LINHA OBRIGATORIAMENTE 👇
-        // Headers que o BACK deixa o FRONT ler na resposta
         configuration.setExposedHeaders(List.of("Authorization"));
-
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -135,9 +102,11 @@ var convert = new JwtAuthenticationConverter();
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+            throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -158,5 +127,4 @@ var convert = new JwtAuthenticationConverter();
                 .requireAuthorizationConsent(false)
                 .build();
     }
-
 }

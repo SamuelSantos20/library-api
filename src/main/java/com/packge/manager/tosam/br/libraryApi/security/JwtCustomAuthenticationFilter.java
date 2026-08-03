@@ -11,6 +11,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -20,10 +22,13 @@ import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class JwtCustomAuthenticationFilter extends OncePerRequestFilter {
 
     private final UsuarioService usuarioService;
-    private String secret = "minha_senha_super_secreta_123456";
+
+    @Value("${api.security.token.secret}")
+    private String secret;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -31,9 +36,7 @@ public class JwtCustomAuthenticationFilter extends OncePerRequestFilter {
 
         String token = recuperarToken(request);
 
-        // LOG 1: Saber se o filtro foi chamado
         if (token != null) {
-            System.out.println(">>> FILTRO: Token encontrado! Tentando validar...");
             try {
                 Algorithm algorithm = Algorithm.HMAC256(secret);
                 DecodedJWT decodedJWT = JWT.require(algorithm)
@@ -42,28 +45,19 @@ public class JwtCustomAuthenticationFilter extends OncePerRequestFilter {
                         .verify(token);
 
                 String login = decodedJWT.getSubject();
-                // LOG 2: Saber o que tinha dentro do token
-                System.out.println(">>> FILTRO: Token Válido! Login no token: " + login);
 
                 Optional<Usuario> usuario = usuarioService.obterPorLogin(login);
 
                 if (usuario.isPresent()) {
-                    // LOG 3: Sucesso total
-                    System.out.println(">>> FILTRO: Usuário encontrado no banco. Autenticando...");
                     CustomAuthentication authentication = new CustomAuthentication(usuario.get());
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 } else {
-                    // LOG 4: Problema no Banco de Dados
-                    System.out.println(">>> FILTRO ERRO: Usuário '" + login + "' não encontrado no banco de dados!");
+                    log.warn("Usuário associado ao token JWT não foi encontrado");
                 }
 
             } catch (JWTVerificationException e) {
-                // LOG 5: Problema na Assinatura (Senha diferente)
-                System.out.println(">>> FILTRO ERRO: Token inválido ou expirado: " + e.getMessage());
+                log.debug("Token JWT inválido ou expirado: {}", e.getMessage());
             }
-        } else {
-            // Apenas para debug, descomente se quiser ver todas as requisições
-            // System.out.println(">>> FILTRO: Requisição sem token.");
         }
 
         filterChain.doFilter(request, response);

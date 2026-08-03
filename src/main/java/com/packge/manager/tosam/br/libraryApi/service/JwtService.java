@@ -24,22 +24,19 @@ public class JwtService {
             Object principal = authentication.getPrincipal();
             String username;
 
-            if (principal instanceof UserDetails) {
-                username = ((UserDetails) principal).getUsername();
-            }
-            // 👇 AQUI ESTÁ A CORREÇÃO: Tratamos sua classe específica
-            else if (principal instanceof Usuario) {
-                username = ((Usuario) principal).getUsername(); // Pega só o "admin"
-            }
-            else {
-                username = principal.toString(); // Fallback
+            if (principal instanceof UserDetails userDetails) {
+                username = userDetails.getUsername();
+            } else if (principal instanceof Usuario usuario) {
+                username = usuario.getUsername();
+            } else {
+                username = principal.toString();
             }
 
             Algorithm algorithm = Algorithm.HMAC256(secret);
 
             return JWT.create()
                     .withIssuer("Library-API")
-                    .withSubject(username) // Agora vai gravar apenas "admin"
+                    .withSubject(username)
                     .withExpiresAt(dataExpiracao())
                     .sign(algorithm);
 

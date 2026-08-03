@@ -1,8 +1,5 @@
 package com.packge.manager.tosam.br.libraryApi.model;
 
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-
 public enum GeneroLivro {
 
     FICCAO,

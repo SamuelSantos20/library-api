@@ -49,7 +49,6 @@ public class AutorController implements GenericController {
         autorService.salvar(autor);
 
         var location = gerarHaderLoccation(autor.getId());
-        //O metodo ResponseEntity.created() faz com que retorne um crated passando para o metodo uma URI
         return ResponseEntity.created(location).build();
 
 
@@ -98,9 +97,6 @@ public class AutorController implements GenericController {
             @ApiResponse(responseCode = "404", description = "Autor não encontrado."),
     })
     public ResponseEntity<AutorDTO> obterDetalhes(@PathVariable("id") String id) {
-
-        System.out.println(id);
-
 
         var idAutor = UUID.fromString(id);
 
@@ -164,8 +160,6 @@ public class AutorController implements GenericController {
         List<AutorDTO> autorDTOS = autors.stream().
                 map(mapper::toDTO)
                 .collect(Collectors.toList());
-
-        autorDTOS.forEach(System.out::println);
 
         return ResponseEntity.ok(autorDTOS);
 

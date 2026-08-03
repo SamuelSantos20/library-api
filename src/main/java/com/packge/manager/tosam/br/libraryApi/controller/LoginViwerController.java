@@ -1,6 +1,5 @@
 package com.packge.manager.tosam.br.libraryApi.controller;
 
-import com.packge.manager.tosam.br.libraryApi.security.CustomAuthentication;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -24,11 +23,6 @@ public class LoginViwerController {
     @GetMapping("/")
     @ResponseBody
     public String PaginaHome(Authentication authentication) {
-
-        if (authentication instanceof CustomAuthentication customAuthentication){
-
-            System.out.println(customAuthentication.getUsuario());
-        }
 
         return "Olá" + authentication.getName();
 

@@ -11,11 +11,10 @@ import java.util.stream.Collectors;
 public class CustomAuthentication implements Authentication {
 
     private final Usuario usuario;
-    private boolean authenticated; // Controle interno
+    private boolean authenticated;
 
     public CustomAuthentication(Usuario usuario) {
         this.usuario = usuario;
-        // 👇 O SEGREDO: Dizemos que se chegou aqui, o login é VÁLIDO!
         this.authenticated = true;
     }
 

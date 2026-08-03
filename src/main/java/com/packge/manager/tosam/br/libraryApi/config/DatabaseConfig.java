@@ -11,41 +11,36 @@ import javax.sql.DataSource;
 @Configuration
 public class DatabaseConfig {
 
+    private static final int MAXIMUM_POOL_SIZE = 10;
+    private static final int MINIMUM_IDLE_CONNECTIONS = 1;
+    private static final long MAXIMUM_LIFETIME_MILLIS = 1_800_000;
+    private static final long CONNECTION_TIMEOUT_MILLIS = 120_000;
+
     @Value("${spring.datasource.url}")
-    String url;
+    private String url;
+
     @Value("${spring.datasource.username}")
-     String username;
+    private String username;
+
     @Value("${spring.datasource.password}")
-     String password;
+    private String password;
+
     @Value("${spring.datasource.driver-class-name}")
-    String driver;
-
-
-
-
-
+    private String driver;
 
     @Bean
-    DataSource hikariDataSource(){
+    DataSource hikariDataSource() {
         HikariConfig config = new HikariConfig();
-
-        config.setUsername(username);//seta o username
-        config.setPassword(password);//seta o password
-        config.setDriverClassName(driver);//seta o driver
-        config.setJdbcUrl(url);//seta a url
-
-        /**
-         * OBS: TODOS OS VALORES DE TEMPO SÃO PASSADOS E TEM QUE SER PASSADOS NA MEDIDA DE MILISEGUNDOS*/
-
-        config.setMaximumPoolSize(10);// Indica o maximo de conexões que podem estar ativas na aplicação
-        config.setMinimumIdle(1);// Indica o minimo de conexões que a aplicação iara iniciar
-        config.setPoolName("libraryapi-pool-db");// O nome da aplicção para aaprecer no console(opcional)
-        config.setMaxLifetime(1800000);//Indica o maximo que a conexão pode ficar ativa depois desse tempo ela é derrubada e outra é criada
-        config.setConnectionTimeout(120000);// Indica o tempo maximo que a aplicação tentara a conexao , após isso para de tentar e exibe o erro de Timeout
-        config.setConnectionTestQuery("select 1");//Faz o teste selecionando a primentira conexao para saber se o banco esta ativo
+        config.setUsername(username);
+        config.setPassword(password);
+        config.setDriverClassName(driver);
+        config.setJdbcUrl(url);
+        config.setMaximumPoolSize(MAXIMUM_POOL_SIZE);
+        config.setMinimumIdle(MINIMUM_IDLE_CONNECTIONS);
+        config.setPoolName("libraryapi-pool-db");
+        config.setMaxLifetime(MAXIMUM_LIFETIME_MILLIS);
+        config.setConnectionTimeout(CONNECTION_TIMEOUT_MILLIS);
+        config.setConnectionTestQuery("select 1");
         return new HikariDataSource(config);
     }
-
-
-
 }

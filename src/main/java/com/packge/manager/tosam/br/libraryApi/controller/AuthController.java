@@ -1,8 +1,5 @@
 package com.packge.manager.tosam.br.libraryApi.controller;
 
-import com.packge.manager.tosam.br.libraryApi.dto.UsuarioDTO; // Ou crie um LoginDTO simples
-import com.packge.manager.tosam.br.libraryApi.security.JwtCustomAuthenticationFilter;
-// Importe seu serviço de token se tiver, ou a lógica de geração
 import com.packge.manager.tosam.br.libraryApi.service.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,7 +20,7 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
 
-    private  final JwtService jwtService;
+    private final JwtService jwtService;
 
     @PostMapping("/login")
     public ResponseEntity<Object> login(@RequestBody LoginDTO dadosLogin) {
