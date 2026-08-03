@@ -1,105 +1,122 @@
 # Library API
 
-Uma API para gerenciar autores e livros, utilizando autenticação e segurança com **Spring Security**. A API suporta autenticação via **Basic Auth**, **JWT** e **OAuth2**.
+API REST para gerenciar autores, livros e usuários, com autenticação JWT, login social via Google e controle de acesso por perfil.
 
-## 🛠️ Tecnologias Utilizadas
+## Funcionalidades
 
-- **Java 17**
-  
-- **Spring Boot**
-  
-- **Spring Security**
-  
-- **JWT (JSON Web Token)**
-  
-- **OAuth2**
-  
-- **PostgreSQL**
+- CRUD de autores e livros.
+- Pesquisa paginada de livros por ISBN, título, autor, gênero e ano de publicação.
+- Cadastro de usuários com senha criptografada.
+- Autenticação por JWT e autorização por perfis (`OPERADOR`, `GERENTE` e `ADMIN`).
+- Login social com Google OAuth2.
+- Validação de dados e tratamento centralizado de exceções.
+- Documentação interativa com OpenAPI e Swagger UI.
 
-## 🔑 Funcionalidades
+## Tecnologias
 
-- **Cadastro de Autores**: Permite criar, listar, atualizar e excluir autores.
-  
-- **Cadastro de Livros**: Permite criar, listar, atualizar e excluir livros.
-  
-- **Autenticação e Autorização**:
-  
-  - **Basic Auth** para autenticação simples.
-    
-  - **JWT** para autenticação baseada em tokens.
-    
-  - **OAuth2** para autenticação com provedores externos, como Google.
+- Java 21
+- Spring Boot 3.3.5
+- Spring Web, Spring Data JPA e Spring Security
+- JWT e OAuth2
+- PostgreSQL
+- MapStruct e Lombok
+- OpenAPI/Swagger
+- JUnit 5
+- Maven Wrapper
 
-## 🚀 Como Executar
+## Pré-requisitos
+
+- JDK 21
+- PostgreSQL com um banco chamado `library`
+- Credenciais OAuth2 do Google para utilizar o login social
+
+## Configuração
+
+A aplicação aceita as seguintes variáveis de ambiente:
+
+| Variável | Descrição | Valor padrão |
+| --- | --- | --- |
+| `DB_URL` | URL JDBC do PostgreSQL | `jdbc:postgresql://localhost:5432/library` |
+| `DB_USERNAME` | Usuário do PostgreSQL | `postgres` |
+| `DB_PASSWORD` | Senha do PostgreSQL | `admin` |
+| `JWT_SECRET` | Chave usada para assinar os tokens JWT | chave local de desenvolvimento |
+| `GOOGLE_CLIENT_ID` | Client ID do Google OAuth2 | obrigatório |
+| `GOOGLE_CLIENT_SECRET` | Client secret do Google OAuth2 | obrigatório |
+| `CORS_ALLOWED_ORIGINS` | Origens permitidas, separadas por vírgula | URLs locais usadas no desenvolvimento |
+
+Use valores próprios e seguros fora do ambiente de desenvolvimento.
+
+## Como executar
 
 1. Clone o repositório:
-2. 
+
    ```bash
-   git clone https://github.com/seu-usuario/library-api.git
-   
+   git clone https://github.com/SamuelSantos20/library-api.git
    cd library-api
-   
-Configure o banco de dados no arquivo application.yml ou application.properties:
+   ```
 
-yaml
+2. Configure o PostgreSQL e as variáveis de ambiente necessárias.
 
-Copiar código
+3. Inicie a aplicação:
 
-spring:
+   ```bash
+   ./mvnw spring-boot:run
+   ```
 
-  datasource:
-  
-    url: jdbc:postgresql://localhost:5432/library
-    
-    username: seu-usuario
-    
-    password: sua-senha
-    
-Compile e execute o projeto:
+   No Windows, use `mvnw.cmd spring-boot:run`.
 
-bash
+A API ficará disponível em `http://localhost:8081`.
 
-Copiar código
+## Autenticação
 
-./mvnw spring-boot:run
+Cadastre um usuário em `POST /usuarios` e autentique-se em `POST /auth/login`:
 
-Acesse a API em: http://localhost:8080.
+```json
+{
+  "login": "seu-usuario",
+  "senha": "sua-senha"
+}
+```
 
-📄 Endpoints Principais
+Envie o token retornado nas rotas protegidas:
 
-Livros
+```http
+Authorization: Bearer <token>
+```
 
-POST /livros - Cadastra um novo livro.
+## Endpoints principais
 
-GET /livros - Lista todos os livros.
+| Método | Endpoint | Descrição |
+| --- | --- | --- |
+| `POST` | `/usuarios` | Cadastra um usuário |
+| `POST` | `/auth/login` | Gera um token JWT |
+| `POST` | `/livros` | Cadastra um livro |
+| `GET` | `/livros` | Pesquisa livros com filtros e paginação |
+| `GET` | `/livros/{id}` | Consulta um livro |
+| `PUT` | `/livros/{id}` | Atualiza um livro |
+| `DELETE` | `/livros/{id}` | Exclui um livro |
+| `POST` | `/autores` | Cadastra um autor |
+| `GET` | `/autores` | Pesquisa autores |
+| `GET` | `/autores/{id}` | Consulta um autor |
+| `PUT` | `/autores/{id}` | Atualiza um autor |
+| `DELETE` | `/autores/{id}` | Exclui um autor |
 
-PUT /livros/{id} - Atualiza um livro existente.
+## Documentação e testes
 
-DELETE /livros/{id} - Exclui um livro.
+Com a aplicação em execução, acesse o Swagger UI em:
 
-Autores
+```text
+http://localhost:8081/swagger-ui.html
+```
 
-POST /autores - Cadastra um novo autor.
+Para executar os testes com o PostgreSQL configurado:
 
-GET /autores - Lista todos os autores.
+```bash
+./mvnw test
+```
 
-PUT /autores/{id} - Atualiza um autor existente.
+No Windows, use `mvnw.cmd test`.
 
-DELETE /autores/{id} - Exclui um autor.
+## Licença
 
-🛡️ Segurança
-Basic Auth: Use username e password diretamente no cabeçalho da requisição.
-
-JWT: Gere um token ao autenticar-se e use-o para acessar recursos protegidos.
-
-OAuth2: Integração com provedores externos para autenticação, como Google.
-
-📚 Documentação
-
-Acesse a documentação da API no Swagger:
-
-URL: http://localhost:8080/swagger-ui
-
-🧑‍💻 Contribuições
-
-Contribuições são bem-vindas! Sinta-se à vontade para abrir issues ou pull requests.
+Este projeto está licenciado sob os termos do arquivo [LICENSE](LICENSE).
